@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Chatbot RH</title>
+
+<style>
+/* ===============================
+   RESET Y BASE
+================================ */
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(#e6f0ff, #dff5eb);
+}
+
+/* ===============================
+   CONTENEDOR TIPO CELULAR
+================================ */
+.phone {
+  width: 360px;
+  height: 680px;
+  background: #ffffff;
+  border-radius: 40px;
+  padding: 14px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+.chat-container {
+  height: 100%;
+  border-radius: 30px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===============================
+   HEADER
+================================ */
+.chat-header {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: white;
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Avatar */
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+}
+
+.chat-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.chat-header p {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* Estado */
+.status {
+  width: 10px;
+  height: 10px;
+  background: #22c55e;
+  border-radius: 50%;
+}
+
+/* ===============================
+   CUERPO DEL CHAT
+================================ */
+.chat-body {
+  flex: 1;
+  background: #f8fafc;
+  padding: 14px;
+  overflow-y: auto;
+}
+
+/* Mensaje */
+.message {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+/* ===============================
+   BOTONES
+================================ */
+.option {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  color: white;
+}
+
+/* Colores editables */
+.blue { background: #3b82f6; }
+.green { background: #22c55e; }
+.yellow { background: #fbbf24; }
+
+/* ===============================
+   INPUT
+================================ */
+.chat-input {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.chat-input input {
+  flex: 1;
+  border-radius: 20px;
+  border: 1px solid #d1d5db;
+  padding: 10px 15px;
+  outline: none;
+  font-size: 14px;
+}
+
+.send {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: #22c55e;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+/* ===============================
+   MENSAJES TIPO CHAT REAL
+================================ */
+
+/* Contenedor general de mensaje */
+.chat-row {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 14px;
+}
+
+/* BOT */
+.chat-row.bot {
+  justify-content: flex-start;
+}
+
+.chat-row.bot .avatar-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.chat-row.bot .bubble {
+  background: white;
+  border-radius: 16px 16px 16px 4px;
+  padding: 14px;
+  max-width: 75%;
+  font-size: 14px;
+  box-shadow: 0 3px 8px rgba(0,0,0,.1);
+}
+
+/* USUARIO */
+.chat-row.user {
+  justify-content: flex-end;
+}
+
+.chat-row.user .bubble {
+  background: #22c55e;
+  color: white;
+  border-radius: 16px 16px 4px 16px;
+  padding: 12px 16px;
+  max-width: 70%;
+  font-weight: 500;
+}
+
+/* ===============================
+   ANIMACIÓN DE BOTONES
+================================ */
+
+.option {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeUp 0.4s ease forwards;
+}
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===============================
+   ANIMACIÓN CLICK BURBUJA
+================================ */
+
+.option {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+/* Al presionar */
+.option:active {
+  transform: scale(0.95);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2) inset;
+}
+.option {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Onda */
+.option::after {
+  content: '';
+  position: absolute;
+  width: 120%;
+  height: 120%;
+  background: rgba(255,255,255,0.35);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.option:active::after {
+  animation: ripple 0.4s ease-out;
+}
+
+@keyframes ripple {
+  from {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.6;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+.chat-row .bubble {
+  word-wrap: break-word;
+}
+
+.chat-row.bot .bubble {
+  max-width: 78%;
+}
+
+.chat-row.user .bubble {
+  max-width: 65%;
+}
+
+.avatar-small {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.chat-row.bot .bubble img {
+  max-width: 120px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* ===============================
+   TARJETAS DE IMÁGENES (COMUNICACIÓN)
+================================ */
+
+.image-gallery {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.image-card {
+  min-width: 180px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.image-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.image-card p {
+  padding: 10px;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
+  background: #f1f5f9;
+}
+.image-gallery {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  overflow-x: auto;
+}
+
+.image-card {
+  min-width: 160px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+
+.image-card img {
+  width: 100%;
+  height: auto;
+}
+
+.image-card p {
+  font-size: 12px;
+  font-weight: bold;
+  padding: 8px;
+  text-align: center;
+  background: #f1f5f9;
+}
+.image-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 30px;
+  overflow-y: auto;
+  z-index: 9999;
+  cursor: pointer;
+}
+.image-overlay img {
+  width: auto;
+  max-width: 95%;
+  height: auto;
+  border-radius: 18px;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<div class="phone">
+  <div class="chat-container">
+
+    <div class="chat-header">
+      <div class="header-left">
+        <img src="avatar.png" class="avatar">
+        <div>
+          <h3>Rhem 💬</h3>
+          <p>Asistente de RH - Estampados Magna</p>
+        </div>
+      </div>
+      <div class="status"></div>
+    </div>
+
+<div class="chat-body">
+<div id="chat-messages"></div>
+  <!-- ================= PANTALLA MENU ================= -->
+  <div id="menu-screen">
+    <div class="message">
+      Hola 👋<br><br>
+      Soy Rhem 💬, tu asistente de Recursos Humanos en Estampados Magna.<br><br>
+      ¿En qué puedo ayudarte?
+    </div>
+
+    <button class="option blue" id="btn-rh">
+      🏢 Recursos Humanos
+    </button>   
+<button class="option green" id="btn-comunicacion">
+  📢 Comunicación
+</button>
+
+  </div>
+
+  <!-- ================= PANTALLA RH ================= -->
+  <div id="rh-screen" style="display:none;">
+
+  <button class="option blue rh-option"
+data-question="¿Qué es RH?"
+data-answer="
+El área de Recursos Humanos de Estampados Magna es el corazón de nuestra empresa.<br><br>
+👥 <b>Gestión de talento</b> - Reclutamiento, selección y contratación<br>
+📋 <b>Administración</b> - Nómina, prestaciones y cumplimiento laboral<br>
+💚 <b>Bienestar</b> - Programas de salud y clima organizacional<br>
+📈 <b>Desarrollo</b> - Capacitación y crecimiento profesional<br><br>
+¡Estamos contigo en cada paso!
+">
+👥 ¿Qué es RH?
+</button>
+
+<button class="option green rh-option"
+data-question="¿Qué hace RH?"
+data-answer="
+✅ Reclutamiento y Selección<br>
+📝 Inducción de personal<br>
+💰 Nómina y prestaciones<br>
+🏥 Seguridad e Higiene<br>
+📊 Evaluación de desempeño<br>
+🎓 Capacitación continua
+">
+🛠️ ¿Qué hace RH?
+</button>
+
+<button class="option yellow rh-option"
+data-question="¿En qué puede ayudarme?"
+data-answer="
+💬 Dudas sobre políticas<br>
+📅 Información de eventos<br>
+💼 Vacantes disponibles<br>
+🎁 Beneficios<br>
+📞 Contacto con RH<br>
+⚠️ Seguridad laboral
+">
+🤝 ¿En qué puede ayudarme?
+</button>
+    <button class="option blue" id="back-menu">
+      ⬅ Volver al menú
+    </button>
+
+</div>
+<!-- Contenedor de tarjetas RH -->
+<div id="rh-cards"></div>
+<!-- ================= PANTALLA COMUNICACIÓN ================= -->
+<div id="com-screen" style="display:none;">
+  
+  <button class="option blue com-option"
+    data-question="Avisos importantes"
+    data-answer="
+📌 <b>Avisos Importantes</b><br><br>
+• Cambios de horario<br>
+• Indicaciones de seguridad<br>
+• Información interna relevante<br><br>
+Consulta este apartado constantemente para no perderte nada.
+">
+    🚨 Avisos importantes
+  </button>
+
+  <button class="option green com-option"
+    data-question="Comunicados"
+    data-answer="
+📄 <b>Comunicados</b><br><br>
+• Mensajes oficiales<br>
+• Anuncios de la empresa<br>
+• Información administrativa<br><br>
+Toda comunicación formal se publica aquí.
+">
+    📝 Comunicados
+  </button>
+
+  <button class="option yellow com-option"
+    data-question="Eventos del mes"
+    data-answer="
+📅 <b>Eventos del Mes</b><br><br>
+🎉 Cumpleaños<br>
+🎓 Capacitaciones<br>
+🏆 Actividades especiales<br><br>
+¡Participa y mantente informado!
+">
+    🎉 Eventos del mes
+  </button>
+
+  <button class="option blue" id="back-menu-com">
+    ⬅ Volver al menú
+  </button>
+</div>
+</div> <!-- CIERRE DE com-screen -->
+
+<!-- ================= PANTALLA IMAGEN DETALLE ================= -->
+<div id="image-view-screen" style="display:none; padding:14px;">
+
+  <button class="option blue" id="back-image">
+    ⬅ Regresar
+  </button>
+
+  <div class="message" style="text-align:center;">
+    <img id="image-view" src="" style="max-width:100%; border-radius:16px;">
+    <p id="image-caption" style="margin-top:10px; font-weight:bold;"></p>
+  </div>
+
+</div>
+
+</div>
+<script>
+  const menuScreen = document.getElementById('menu-screen');
+  const rhScreen = document.getElementById('rh-screen');
+
+  const btnRh = document.getElementById('btn-rh');
+  const backMenu = document.getElementById('back-menu');
+
+  btnRh.addEventListener('click', () => {
+    menuScreen.style.display = 'none';
+    rhScreen.style.display = 'block';
+  });
+
+  backMenu.addEventListener('click', () => {
+    rhScreen.style.display = 'none';
+    menuScreen.style.display = 'block';
+  });
+  
+
+const chat = document.getElementById("chat-messages");
+
+// Crear mensaje del usuario
+function userMessage(text){
+  chat.innerHTML += `
+   <div class="chat-row user">
+     <div class="bubble">${text}</div>
+   </div>
+  `;
+  scrollBottom();
+}
+
+function botMessage(text){
+  chat.innerHTML += `
+   <div class="chat-row bot">
+     <img src="avatar.png" class="avatar-small">
+     <div class="bubble">${text}</div>
+   </div>
+  `;
+  scrollBottom();
+}
+
+// Scroll automático
+function scrollBottom(){
+  chat.parentElement.scrollTop = chat.parentElement.scrollHeight;
+}
+
+// RH buttons
+document.querySelectorAll(".rh-option").forEach(btn => {
+  btn.addEventListener("click", () => {
+
+    // ✅ OCULTAR SOLO EL BOTÓN CLICKEADO
+    btn.style.display = "none";
+
+    const question = btn.dataset.question;
+    const answer = btn.dataset.answer;
+
+    userMessage(question);
+
+    setTimeout(() => {
+      botMessage(answer);
+    }, 600);
+  });
+});
+// Botón RH principal
+btnRh.addEventListener('click', () => {
+  menuScreen.style.display = 'none';
+  rhScreen.style.display = 'block';
+
+  botMessage("📌 Selecciona una opción de Recursos Humanos:");
+});
+backMenu.addEventListener('click', () => {
+  rhScreen.style.display = 'none';
+  menuScreen.style.display = 'block';
+
+
+
+  // ✅ LIMPIAR MENSAJES DEL CHAT
+  chat.innerHTML = '';
+});
+
+  const btnCom = document.getElementById('btn-comunicacion');
+  const comScreen = document.getElementById('com-screen');
+  const backMenuCom = document.getElementById('back-menu-com');
+
+  // Abrir Comunicación
+  btnCom.addEventListener('click', () => {
+    menuScreen.style.display = 'none';
+    comScreen.style.display = 'block';
+    botMessage("📢 Selecciona una opción de Comunicación:");
+  });
+
+  // Volver al menú desde Comunicación
+  backMenuCom.addEventListener('click', () => {
+    comScreen.style.display = 'none';
+    menuScreen.style.display = 'block';
+    chat.innerHTML = '';
+  });
+
+  // Opciones de Comunicación
+  
+document.querySelectorAll(".com-option").forEach(btn => {
+  btn.addEventListener("click", () => {
+
+    const question = btn.dataset.question;
+    const answer = btn.dataset.answer;
+
+    // Ocultar solo el botón presionado
+    btn.style.display = "none";
+    userMessage(question);
+
+    setTimeout(() => {
+      botMessage(answer);
+
+      // 📸 Imágenes solo para Eventos del mes
+      botImages([
+  { src: "img/evento1.jpg", caption:"🎉 5K Magna Runners" },
+  { src: "img/evento2.jpg", caption:"🎓 6K for Water" }
+]);
+
+    }, 600);
+  });
+});
+
+function botImages(images) {
+  let html = `
+    <div class="chat-row bot">
+      <img src="avatar.png" class="avatar-small">
+      <div class="bubble">
+        <div class="image-gallery">
+  `;
+
+  images.forEach(img => {
+    html += `
+      <div class="image-card"
+           onclick="openImage('${img.src}', '${img.caption}')">
+        <img src="${img.src}">
+        <p>${img.caption}</p>
+      </div>
+    `;
+  });
+
+  html += `
+        </div>
+      </div>
+    </div>
+  `;
+
+  chat.innerHTML += html;
+  scrollBottom();
+}
+
+
+</script>
+</body>
+</html>
